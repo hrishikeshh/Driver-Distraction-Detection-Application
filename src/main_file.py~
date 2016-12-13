@@ -1,0 +1,41 @@
+from FaceDetector import FaceDetector
+from FaceModel import FaceModel
+from Util import Util
+from Display import Display
+from Capture import Capture
+
+def main():
+    # Instantiate Classes
+    detector = FaceDetector(FACE_CLASSIFIER_PATH, EYE_CLASSIFIER_PATH)
+    model = FaceModel()
+    display = Display()
+    capture = Capture()
+
+    oldTime = time.time()
+    i = 0
+    
+    while True:
+        # Calculate time difference (dt), update oldTime variable
+        newTime = time.time()
+        dt = newTime - oldTime
+        oldTime = newTime
+
+        # Grab Frames
+        frames = capture.read()
+        
+        # Detect face 20% of the time, eyes 100% of the time
+        if i % 10 is 0:
+            rects = detector.detect(frames)
+        else:
+            rects = detector.detect(frames, model.getPreviousFaceRects())
+        i += 1
+
+        # Add detected rectangles to model
+        model.add(rects)
+
+        # Render
+        cv2.imshow("Video", frames['display'])
+        display.renderScene(frames['display'], model, rects)
+        display.renderEyes(frames['color'], model)
+
+cProfile.run('main()', 'profile.o', 'cumtime')
